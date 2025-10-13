@@ -4,6 +4,7 @@ import React, { FC, useState, useRef, MouseEvent } from "react";
 
 export const MouseEvents: FC = () => {
   const [moveCount, setMoveCount] = useState(0);
+  const [mouseOver, setMouseOver] = useState("");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleClick = () => alert("Clicked!");
@@ -14,7 +15,15 @@ export const MouseEvents: FC = () => {
     alert("Right Click (Context Menu)!");
   };
 
-  const handleMouseOver = () => console.log("Mouse over");
+  const handleMouseOver = (e: MouseEvent<HTMLButtonElement>) => {
+    setMouseOver((prev) => {
+      if (e.type !== "mouseover") {
+        return "";
+      } else {
+        return prev + "" + e.type;
+      }
+    });
+  };
   const handleMouseOut = () => console.log("Mouse out");
   const handleMouseMove = () => {
     setMoveCount((prev) => prev + 1);
@@ -46,6 +55,8 @@ export const MouseEvents: FC = () => {
         Hover / Click Me
       </button>
       <p>Mouse Move: {moveCount}</p>
+
+      <p>Mouse over: {mouseOver}</p>
     </div>
   );
 };

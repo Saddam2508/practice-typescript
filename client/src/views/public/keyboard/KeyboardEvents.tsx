@@ -1,39 +1,47 @@
 "use client";
 
-import React, { FC, useState, useRef, KeyboardEvent } from "react";
+import React, { FC, useState, useRef, useEffect } from "react";
 
 export const KeyboardEvents: FC = () => {
-  const [key, setKey] = useState<string[]>([]);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [value, setValue] = useState("");
+  const [focused, setFocused] = useState(false);
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {};
-  const handleKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
-    const key = e.key;
-    //  if (key === "Backspace") {
-    //   window.alert("do not save please");
-    // } else {
-    //   setKey(key);
-    // }
-    switch (key) {
-      case "Backspace":
-        setKey((prev) => prev.slice(0, -1));
-        break;
-
-      default:
-        setKey((prev) => [...(prev + key)]);
-        break;
+  // 🟢 প্রথমবার কম্পোনেন্ট লোড হলে ইনপুটে ফোকাস দাও
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
+  }, []);
+
+  // 🟡 বাটনে ক্লিক করলে আবার ফোকাসে যাবে
+  const handleFocusClick = () => {
+    inputRef.current?.focus();
   };
 
   return (
-    <div>
+    <div className="p-4 space-y-2">
       <input
+        ref={inputRef}
         type="text"
-        onKeyDown={handleKeyDown}
-        onKeyUp={handleKeyUp}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         placeholder="Type something..."
-        className="border"
+        className={`border px-2 py-1 rounded ${
+          focused ? "border-blue-500 shadow-md" : "border-gray-300"
+        }`}
       />
-      <p>Press Keys: {key.join("")}</p>
+      <button
+        onClick={handleFocusClick}
+        className="px-3 py-1 bg-blue-500 text-white rounded"
+      >
+        Focus Input
+      </button>
+
+      <p>Focus status: {focused ? "Active" : "Not Active"}</p>
+      <p>Value: {value}</p>
     </div>
   );
 };
