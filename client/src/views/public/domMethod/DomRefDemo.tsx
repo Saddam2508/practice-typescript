@@ -23,6 +23,11 @@ export const DomRefDemo = () => {
   const handleClickByRef = () => {
     buttonRef.current?.click();
   };
+  const handleCopy = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    if (e.type === "copy") {
+      alert("copy");
+    }
+  };
 
   const handleScrollIntoView = () => {
     buttonRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -51,6 +56,7 @@ export const DomRefDemo = () => {
       <input
         ref={inputRef}
         type="text"
+        onCopy={handleCopy}
         placeholder="Focus me!"
         className="border p-2 rounded-md"
       />
@@ -62,7 +68,6 @@ export const DomRefDemo = () => {
       >
         Demo Button
       </button>
-
       <div className="grid grid-cols-2 gap-2 w-80 mt-4">
         <button onClick={handleChangeStyle} className="bg-gray-200 p-2 rounded">
           🎨 Change Style

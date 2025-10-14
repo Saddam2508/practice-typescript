@@ -1,3 +1,4 @@
+import { AddString } from "@/views/public/addString/AddString";
 import ClickExample from "@/views/public/domMethod/ClickExample";
 import { DomMethodsDemo } from "@/views/public/domMethod/DomMethodsDemo";
 import { DomRefDemo } from "@/views/public/domMethod/DomRefDemo";
@@ -15,6 +16,7 @@ const page: FC = () => {
       <ClickExample />
       <RefExample />
       <DomRefDemo />
+      <AddString />
     </div>
   );
 };
