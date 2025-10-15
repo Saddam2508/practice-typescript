@@ -4,21 +4,21 @@ import React, { ChangeEvent, FC, useState, MouseEvent } from "react";
 
 export const AddString: FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
-  const [selectedOption, setSelectedOption] = useState<string>(""); // select value
+  const [selectedOption, setSelectedOption] = useState<string>("");
   const [items, setItems] = useState<string[]>([]);
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
-  // ইনপুট থেকে মান নেওয়া
+  // 🔹 ইনপুট পরিবর্তন হ্যান্ডলার
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
 
-  // সিলেক্ট থেকে মান নেওয়া
+  // 🔹 সিলেক্ট পরিবর্তন হ্যান্ডলার
   const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setSelectedOption(e.target.value);
   };
 
-  // যোগ বা আপডেট
+  // 🔹 Add / Update
   const handleAddAndUpdate = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (inputValue.trim() === "" || selectedOption === "") return;
@@ -38,17 +38,49 @@ export const AddString: FC = () => {
     setSelectedOption("");
   };
 
-  // রিমুভ
+  // 🔹 Remove
   const handleRemove = (index: number) => {
     setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // এডিট
+  // 🔹 Edit
   const handleEdit = (index: number) => {
     const [name, category] = items[index].split(" (");
     setInputValue(name);
     setSelectedOption(category?.replace(")", "") || "");
     setEditIndex(index);
+  };
+
+  // 🔹 Submit (FormData তৈরি)
+  const handleSubmit = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    if (items.length === 0) {
+      alert("Please add at least one item before submitting!");
+      return;
+    }
+
+    const formData = new FormData();
+
+    // প্রতিটি item কে আলাদা করে append করা
+    items.forEach((item, index) => {
+      const [name, category] = item.split(" (");
+      formData.append(`items[${index}][name]`, name);
+      formData.append(
+        `items[${index}][category]`,
+        category?.replace(")", "") || ""
+      );
+    });
+
+    // ✅ এখন formData সার্ভারে পাঠাতে পারো axios দিয়ে
+    // axios.post("/api/save", formData);
+
+    // 🔍 Demo আউটপুট console-এ দেখা যাবে
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`);
+    }
+
+    alert("FormData ready to send!");
   };
 
   return (
@@ -75,7 +107,7 @@ export const AddString: FC = () => {
           <option value="Other">Other</option>
         </select>
 
-        {/* Add/Update বাটন */}
+        {/* Add / Update বাটন */}
         <button
           onClick={handleAddAndUpdate}
           className={`${
@@ -111,6 +143,14 @@ export const AddString: FC = () => {
           </li>
         ))}
       </ul>
+
+      {/* Submit বাটন */}
+      <button
+        onClick={handleSubmit}
+        className="bg-purple-600 text-white px-4 py-2 rounded mt-4"
+      >
+        Submit All
+      </button>
     </div>
   );
 };
