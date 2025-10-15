@@ -1,93 +1,109 @@
 "use client";
 
-import React, { useState, ChangeEvent, MouseEvent, FC } from "react";
+import React, { ChangeEvent, FC, useState, MouseEvent } from "react";
 
 export const AddString: FC = () => {
-  const [inputValue, setInputValue] = useState<string>(""); // ইনপুটের মান
-  const [items, setItems] = useState<string[]>([]); // সব string
-  const [editIndex, setEditIndex] = useState<number | null>(null); // কোন আইটেম এডিট হচ্ছে
+  const [inputValue, setInputValue] = useState<string>("");
+  const [selectedOption, setSelectedOption] = useState<string>(""); // select value
+  const [items, setItems] = useState<string[]>([]);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
 
-  // ইনপুট পরিবর্তন
+  // ইনপুট থেকে মান নেওয়া
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
 
-  // যোগ বা আপডেট
-  const handleAddOrUpdate = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
+  // সিলেক্ট থেকে মান নেওয়া
+  const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedOption(e.target.value);
+  };
 
-    if (inputValue.trim() === "") return;
+  // যোগ বা আপডেট
+  const handleAddAndUpdate = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (inputValue.trim() === "" || selectedOption === "") return;
+
+    const combinedValue = `${inputValue} (${selectedOption})`;
 
     if (editIndex !== null) {
-      // এডিট মোডে: নির্দিষ্ট আইটেম আপডেট করা
-      const updatedItems = [...items];
-      updatedItems[editIndex] = inputValue;
-      setItems(updatedItems);
+      const updateValues = [...items];
+      updateValues[editIndex] = combinedValue;
+      setItems(updateValues);
       setEditIndex(null);
-      setInputValue("");
     } else {
-      // নতুন যোগ
-      setItems((prev) => [...prev, inputValue]);
-      setInputValue("");
+      setItems((prev) => [...prev, combinedValue]);
     }
+
+    setInputValue("");
+    setSelectedOption("");
   };
 
-  // এডিট বাটনে ক্লিক করলে
-  const handleEdit = (index: number) => {
-    setInputValue(items[index]); // ইনপুটে ভ্যালু সেট
-    setEditIndex(index); // এডিট মোডে ঢোকা
-  };
-
-  // রিমুভ বাটনে ক্লিক করলে
+  // রিমুভ
   const handleRemove = (index: number) => {
     setItems((prev) => prev.filter((_, i) => i !== index));
-    if (editIndex === index) {
-      // যদি এডিট করা আইটেমটাই ডিলিট হয়
-      setEditIndex(null);
-      setInputValue("");
-    }
+  };
+
+  // এডিট
+  const handleEdit = (index: number) => {
+    const [name, category] = items[index].split(" (");
+    setInputValue(name);
+    setSelectedOption(category?.replace(")", "") || "");
+    setEditIndex(index);
   };
 
   return (
-    <div className="p-4 max-w-sm mx-auto">
-      <div className="flex items-center gap-2">
+    <div className="p-4">
+      <div className="flex gap-2">
+        {/* ইনপুট */}
         <input
           type="text"
           value={inputValue}
           onChange={handleChange}
-          placeholder="Please type"
-          className="border p-2 rounded w-full"
+          placeholder="Type something"
+          className="border p-2 rounded"
         />
+
+        {/* সিলেক্ট */}
+        <select
+          value={selectedOption}
+          onChange={handleSelectChange}
+          className="border p-2 rounded"
+        >
+          <option value="">Select category</option>
+          <option value="Fruit">Fruit</option>
+          <option value="Vegetable">Vegetable</option>
+          <option value="Other">Other</option>
+        </select>
+
+        {/* Add/Update বাটন */}
         <button
-          onClick={handleAddOrUpdate}
+          onClick={handleAddAndUpdate}
           className={`${
-            editIndex !== null
-              ? "bg-green-500 hover:bg-green-600"
-              : "bg-blue-500 hover:bg-blue-600"
-          } text-white px-3 py-2 rounded`}
+            editIndex !== null ? "bg-green-500" : "bg-blue-500"
+          } text-white px-4 py-2 rounded`}
         >
           {editIndex !== null ? "Update" : "Add"}
         </button>
       </div>
 
-      {/* লিস্ট দেখানো */}
+      {/* লিস্ট */}
       <ul className="mt-4 space-y-2">
         {items.map((item, i) => (
           <li
             key={i}
-            className="flex items-center justify-between border p-2 rounded"
+            className="flex justify-between items-center border p-2 rounded"
           >
             <span>{item}</span>
             <div className="flex gap-2">
               <button
                 onClick={() => handleEdit(i)}
-                className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
+                className="bg-yellow-500 text-white px-2 py-1 rounded"
               >
                 Edit
               </button>
               <button
                 onClick={() => handleRemove(i)}
-                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                className="bg-red-500 text-white px-2 py-1 rounded"
               >
                 Remove
               </button>
