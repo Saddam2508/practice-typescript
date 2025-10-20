@@ -9,7 +9,7 @@ export interface Banner {
 export type BannerStatus = "idle" | "pending" | "fulfilled" | "rejected";
 
 export interface BannerState {
-  banner: Banner | null;
+  banners: Banner[];
   status: BannerStatus;
   error: string | null;
 }

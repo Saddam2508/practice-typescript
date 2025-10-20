@@ -3,19 +3,18 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import api from "@/store/axiosInstance";
 import { AxiosError } from "axios";
-import { Banner, BannerState } from "./bannerTypes";
+import { Banner, BannerState } from "./bannerTypes copy";
 
-// 🔹 একক ব্যানার ফেচ
-export const fetchBanner = createAsyncThunk<Banner>(
+export const fetchBanners = createAsyncThunk<Banner[]>(
   "banner/fetch",
   async (_, { rejectWithValue }) => {
     try {
       const res = await api.get("/banners");
-      return res.data; // একটি ব্যানার object ধরছি
+      return res.data;
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string }>;
       console.error(
-        "fetch Banner:",
+        "fetch Banners :",
         axiosError.response?.data || axiosError.message
       );
       return rejectWithValue(
@@ -24,9 +23,7 @@ export const fetchBanner = createAsyncThunk<Banner>(
     }
   }
 );
-
-// 🔹 নতুন ব্যানার তৈরি
-export const createBanner = createAsyncThunk<Banner, FormData>(
+export const createBanners = createAsyncThunk<Banner, FormData>(
   "banner/create",
   async (data, { rejectWithValue }) => {
     try {
@@ -37,7 +34,7 @@ export const createBanner = createAsyncThunk<Banner, FormData>(
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string }>;
       console.error(
-        "create Banner:",
+        "create Banners :",
         axiosError.response?.data || axiosError.message
       );
       return rejectWithValue(
@@ -46,9 +43,7 @@ export const createBanner = createAsyncThunk<Banner, FormData>(
     }
   }
 );
-
-// 🔹 ব্যানার আপডেট
-export const updateBanner = createAsyncThunk<
+export const updateBanners = createAsyncThunk<
   Banner,
   { id: string; data: Partial<Banner> | FormData }
 >("banner/update", async ({ id, data }, { rejectWithValue }) => {
@@ -60,7 +55,7 @@ export const updateBanner = createAsyncThunk<
   } catch (error) {
     const axiosError = error as AxiosError<{ message?: string }>;
     console.error(
-      "update Banner:",
+      "update Banners :",
       axiosError.response?.data || axiosError.message
     );
     return rejectWithValue(
@@ -69,18 +64,17 @@ export const updateBanner = createAsyncThunk<
   }
 });
 
-// 🔹 ব্যানার ডিলিট
-export const deleteBanner = createAsyncThunk<
+export const deleteBanners = createAsyncThunk<
   string, // fulfilled হলে যা রিটার্ন করবে (id)
-  string // thunk-এ পাঠানো id
+  string // ফাংশন কল করার সময় যা পাঠাবে (id)
 >("banner/delete", async (id, { rejectWithValue }) => {
   try {
     await api.delete(`/banners/${id}`);
-    return id;
+    return id; // delete সফল হলে সেই id ফেরত দিচ্ছে
   } catch (error) {
     const axiosError = error as AxiosError<{ message?: string }>;
     console.error(
-      "delete Banner:",
+      "delete Banners :",
       axiosError.response?.data || axiosError.message
     );
     return rejectWithValue(
@@ -89,14 +83,12 @@ export const deleteBanner = createAsyncThunk<
   }
 });
 
-// 🔹 initial state
 const initialState: BannerState = {
-  banner: null,
+  banners: [],
   status: "idle",
   error: null,
 };
 
-// 🔹 Slice তৈরি
 const bannerSlice = createSlice({
   name: "banner",
   initialState,
@@ -104,68 +96,68 @@ const bannerSlice = createSlice({
     resetBanner: (state) => {
       state.status = "idle";
       state.error = null;
-      state.banner = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Fetch
-      .addCase(fetchBanner.pending, (state) => {
+      .addCase(fetchBanners.pending, (state) => {
         state.status = "pending";
       })
       .addCase(
-        fetchBanner.fulfilled,
-        (state, action: PayloadAction<Banner>) => {
+        fetchBanners.fulfilled,
+        (state, action: PayloadAction<Banner[]>) => {
           state.status = "fulfilled";
-          state.banner = action.payload;
+          state.banners = action.payload;
         }
       )
-      .addCase(fetchBanner.rejected, (state, action) => {
+      .addCase(fetchBanners.rejected, (state, action) => {
         state.status = "rejected";
         state.error = action.error.message || "Fail to fetch Banner";
       })
-
-      // Create
-      .addCase(createBanner.pending, (state) => {
+      .addCase(createBanners.pending, (state) => {
         state.status = "pending";
       })
       .addCase(
-        createBanner.fulfilled,
+        createBanners.fulfilled,
         (state, action: PayloadAction<Banner>) => {
           state.status = "fulfilled";
-          state.banner = action.payload;
+          state.banners.push(action.payload);
         }
       )
-      .addCase(createBanner.rejected, (state, action) => {
+      .addCase(createBanners.rejected, (state, action) => {
         state.status = "rejected";
-        state.error = action.error.message || "Fail to create Banner";
+        state.error = action.error.message || "Fail to fetch Banner";
       })
-
-      // Update
-      .addCase(updateBanner.pending, (state) => {
+      .addCase(updateBanners.pending, (state) => {
         state.status = "pending";
       })
       .addCase(
-        updateBanner.fulfilled,
+        updateBanners.fulfilled,
         (state, action: PayloadAction<Banner>) => {
           state.status = "fulfilled";
-          state.banner = action.payload;
+          const index = state.banners.findIndex(
+            (p) => p._id === action.payload._id
+          );
+          if (index !== -1) {
+            state.banners[index] = action.payload;
+          }
         }
       )
-      .addCase(updateBanner.rejected, (state, action) => {
+      .addCase(updateBanners.rejected, (state, action) => {
         state.status = "rejected";
-        state.error = action.error.message || "Fail to update Banner";
+        state.error = action.error.message || "Fail to fetch Banner";
       })
-
-      // Delete
-      .addCase(deleteBanner.pending, (state) => {
+      .addCase(deleteBanners.pending, (state) => {
         state.status = "pending";
       })
-      .addCase(deleteBanner.fulfilled, (state) => {
-        state.status = "fulfilled";
-        state.banner = null;
-      })
-      .addCase(deleteBanner.rejected, (state, action) => {
+      .addCase(
+        deleteBanners.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.status = "fulfilled";
+          state.banners = state.banners.filter((p) => p._id !== action.payload);
+        }
+      )
+      .addCase(deleteBanners.rejected, (state, action) => {
         state.status = "rejected";
         state.error = action.error.message || "Fail to delete Banner";
       });
@@ -173,4 +165,5 @@ const bannerSlice = createSlice({
 });
 
 export const { resetBanner } = bannerSlice.actions;
+
 export default bannerSlice.reducer;
