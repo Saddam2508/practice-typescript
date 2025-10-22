@@ -8,9 +8,9 @@ const {
 const { uploadBanner } = require("../middlewares/uploadFile");
 const bannerRouter = express.Router();
 
-bannerRouter.post("/", uploadBanner.single("banner"), createBanner);
+bannerRouter.post("/", uploadBanner.single("image"), createBanner);
 bannerRouter.get("/", getBanners);
-bannerRouter.put("/:id", uploadBanner.single("banner"), updateBanner);
+bannerRouter.put("/:id", uploadBanner.single("image"), updateBanner);
 bannerRouter.delete("/:id", deleteBanner);
 
 module.exports = bannerRouter;

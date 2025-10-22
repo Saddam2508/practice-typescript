@@ -7,40 +7,42 @@ const createBanner = async (req, res) => {
   try {
     const { title, subtitle, link, isActive, position, productId } = req.body;
     const file = req.file;
-    console.log("Selected file:", file);
 
     if (!title) throw createError(400, "Title is required");
     if (!file || !file.buffer) throw createError(400, "Image file is required");
     if (file.size > 2 * 1024 * 1024)
       throw createError(400, "File too large. Max 2MB");
 
+    // Cloudinary upload
     const response = await uploadSingleBuffer(file.buffer, "site/banners");
 
     const bannerData = {
-      title: title.trim(),
-      subtitle: subtitle?.trim() || null,
-      link: link?.trim() || null,
+      title,
       image: response.secure_url,
-      isActive:
-        isActive !== undefined
-          ? isActive === "true" || isActive === true
-          : true,
+      subtitle: subtitle || null,
+      link: link || null,
+      isActive: isActive !== undefined ? isActive : true,
       position: position ? Number(position) : 0,
       productId: productId ? Number(productId) : null,
     };
 
-    const newBanner = await prisma.banner.create({ data: bannerData });
+    const newBanner = await prisma.banner.create({
+      data: bannerData,
+      // include: {
+      //   product: { select: { id: true, name: true, image: true, price: true } },
+      // },
+    });
+
     res.status(201).json(newBanner);
   } catch (err) {
     console.error("Create Banner Error:", err);
-    res.status(err.status || 500).json({
-      success: false,
-      message: err.message || "Failed to create banner",
-    });
+    res
+      .status(err.status || 500)
+      .json({ message: err.message || "Failed to create banner" });
   }
 };
 
-// Get Banners
+// Get all banners
 const getBanners = async (req, res) => {
   try {
     const banners = await prisma.banner.findMany({
@@ -52,29 +54,30 @@ const getBanners = async (req, res) => {
     res.json(banners);
   } catch (err) {
     console.error("Get Banners Error:", err);
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
-// Update Banner
+// Update banner
 const updateBanner = async (req, res) => {
   try {
     const { title, subtitle, link, isActive, position, productId } = req.body;
     const file = req.file;
 
     const updateData = {
-      title: title?.trim(),
-      subtitle: subtitle?.trim() || null,
-      link: link?.trim() || null,
+      title,
+      subtitle: subtitle || null,
+      link: link || null,
       isActive: isActive === "true" || isActive === true,
       position: position ? Number(position) : 0,
       productId: productId ? Number(productId) : null,
     };
 
+    // New image upload
     if (file && file.buffer) {
       if (file.size > 2 * 1024 * 1024)
         throw createError(400, "File too large. Max 2MB");
-      const response = await uploadSingleBuffer(file.buffer, "site/banners");
+      const response = await uploadSingleBuffer(file.buffer, "site/banner");
       updateData.image = response.secure_url;
     }
 
@@ -89,25 +92,24 @@ const updateBanner = async (req, res) => {
     res.json(updatedBanner);
   } catch (err) {
     console.error("Update Banner Error:", err);
-    res.status(err.status || 500).json({
-      success: false,
-      message: err.message || "Failed to update banner",
-    });
+    res.status(500).json({ message: err.message });
   }
 };
 
-// Delete Banner
+// Delete banner
 const deleteBanner = async (req, res) => {
   try {
     await prisma.banner.delete({ where: { id: Number(req.params.id) } });
-    res.json({ success: true, message: "Banner deleted successfully" });
+    res.json({ message: "Banner deleted" });
   } catch (err) {
     console.error("Delete Banner Error:", err);
-    res.status(err.status || 500).json({
-      success: false,
-      message: err.message || "Failed to delete banner",
-    });
+    res.status(500).json({ message: err.message });
   }
 };
 
-module.exports = { createBanner, getBanners, updateBanner, deleteBanner };
+module.exports = {
+  createBanner,
+  getBanners,
+  updateBanner,
+  deleteBanner,
+};

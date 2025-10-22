@@ -1,3 +1,4 @@
+import AdminBannerForm from "@/views/admin/AdminBannerForm";
 import { AddString } from "@/views/public/addString/AddString";
 import ClickExample from "@/views/public/domMethod/ClickExample";
 import { DomMethodsDemo } from "@/views/public/domMethod/DomMethodsDemo";
@@ -17,6 +18,7 @@ const page: FC = () => {
       <RefExample />
       <DomRefDemo />
       <AddString />
+      <AdminBannerForm />
     </div>
   );
 };
